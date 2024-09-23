@@ -13,7 +13,7 @@ public sealed class ArtNetPollReplyBuffer : ArtNetPacketBuffer
         var destinationBytes = destination.GetAddressBytes();
         var shortNameBytes = Encoding.Default.GetBytes( shortName );
         var longNameBytes = Encoding.Default.GetBytes( longName );
-        
+
         System.Buffer.BlockCopy( destinationBytes, 0, Buffer, 10, 4 );
         System.Buffer.BlockCopy( shortNameBytes, 0, Buffer, 26, shortNameBytes.Length );
         System.Buffer.BlockCopy( longNameBytes, 0, Buffer, 44, longNameBytes.Length );
@@ -28,12 +28,12 @@ public sealed class ArtNetPollReplyBuffer : ArtNetPacketBuffer
     }
 
     public byte[] IpAddress => Buffer[ 10..14 ];
-    public byte[] ShortName => Buffer[ 26..44 ];
-    public byte[] LongName => Buffer[ 44..108 ];
+    public string ShortName => Encoding.Default.GetString( Buffer[ 26..44 ] ).TrimEnd( '\0' );
+    public string LongName => Encoding.Default.GetString( Buffer[ 44..108 ] ).TrimEnd( '\0' );
     public byte[] Report => Buffer[ 108..172 ];
 
     public override string ToString()
     {
-        return $"[ARTNET-POLL-REPLY] {string.Join( ",", IpAddress )} {Encoding.Default.GetString( ShortName ).TrimEnd( '\0' )}\n{Encoding.Default.GetString( LongName ).TrimEnd( '\0' )}";
+        return $"[ARTNET-POLL-REPLY] {string.Join( ",", IpAddress )} {ShortName}\n{LongName}";
     }
 }

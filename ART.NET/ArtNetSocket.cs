@@ -34,7 +34,7 @@ public class ArtNetSocket : Socket
 {
     private const int Port = 6454;
 
-    private readonly NetworkInterface NetworkInterface;
+    public readonly NetworkInterface NetworkInterface;
     private readonly EndPoint BroadcastEndpoint;
 
     private ArtNetOpCodes[] ListeningFor = [ ];
@@ -55,9 +55,10 @@ public class ArtNetSocket : Socket
         SetSocketOption( SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1 );
     }
 
-    public void Send( IArtNetPacketBuffer buffer, EndPoint? destination = null )
+    public void Send( IArtNetPacketBuffer buffer, IPAddress? destination = null )
     {
-        SendTo( buffer.Buffer, SocketFlags.None, destination ?? BroadcastEndpoint );
+        Console.WriteLine( $"Sending to {destination}" );
+        SendTo( buffer.Buffer, SocketFlags.None, destination is not null ? new IPEndPoint( destination, Port ) : BroadcastEndpoint );
     }
 
     public void ListenFor( params ArtNetOpCodes[] opCodes )
