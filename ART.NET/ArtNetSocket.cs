@@ -39,7 +39,7 @@ public class ArtNetSocket : Socket
 
     private ArtNetOpCodes[] ListeningFor = [ ];
 
-    private readonly byte[] RxBuffer = new byte[ 512 ];
+    private readonly byte[] RxBuffer = new byte[ 1024 ];
 
     public readonly BlockingCollection<ArtNetPacketBuffer> RxQueue = new ();
 
@@ -57,8 +57,15 @@ public class ArtNetSocket : Socket
 
     public void Send( IArtNetPacketBuffer buffer, IPAddress? destination = null )
     {
-        Console.WriteLine( $"Sending to {destination}" );
-        SendTo( buffer.Buffer, SocketFlags.None, destination is not null ? new IPEndPoint( destination, Port ) : BroadcastEndpoint );
+        try
+        {
+            Console.WriteLine( $"Sending to {destination}" );
+            SendTo( buffer.Buffer, SocketFlags.None, destination is not null ? new IPEndPoint( destination, Port ) : BroadcastEndpoint );
+        }
+        catch ( Exception e )
+        {
+            Console.WriteLine( e );
+        }
     }
 
     public void ListenFor( params ArtNetOpCodes[] opCodes )
@@ -95,6 +102,8 @@ public class ArtNetSocket : Socket
 
                 var length = EndReceiveMessageFrom( ar, ref flags, ref remote, out _ );
 
+                Console.WriteLine($"Received {length} bytes from {remote}");
+                
                 if ( NetworkInterface.Address.Equals( ( ( IPEndPoint )remote ).Address ) ) return;
                 if ( length <= 12 || !RxBuffer.IsArtNetPacket() ) return;
 
