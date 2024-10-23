@@ -29,7 +29,32 @@ public sealed class ArtNetPollReplyBuffer : ArtNetPacketBuffer
 
     public byte[] IpAddress => Buffer[ 10..14 ];
     public string ShortName => Encoding.Default.GetString( Buffer[ 26..44 ] ).TrimEnd( '\0' );
-    public string LongName => Encoding.Default.GetString( Buffer[ 44..108 ] ).TrimEnd( '\0' );
+    public string LongName
+    {
+        get
+        {
+            var bytes = Buffer[ 44..108 ];
+
+            var buf = new byte[64];
+            
+            for ( var i = 0; i < bytes.Length; i++ )
+            {
+                if ( bytes[ i ] != 0 )
+                {
+                    buf[ i ] = bytes[ i ];
+                }
+                else
+                {
+                    break;
+                }
+            }
+            
+            var s = Encoding.UTF8.GetString( buf );
+            var trimmed = s.TrimEnd( '\0', '\n', (char)0 );
+            return trimmed;
+        }
+    }
+
     public byte[] Report => Buffer[ 108..172 ];
 
     public override string ToString()

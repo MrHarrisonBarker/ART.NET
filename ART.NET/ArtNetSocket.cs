@@ -4,32 +4,6 @@ using System.Net.Sockets;
 
 namespace ART.NET;
 
-public record class NetworkInterface
-{
-    public string Name { get; }
-    public IPAddress Address { get; }
-    public IPAddress Subnet { get; }
-
-    public NetworkInterface( string name, IPAddress address, IPAddress subnet )
-    {
-        Name = name;
-        Address = address;
-        Subnet = subnet;
-
-        var addressBytes = address.GetAddressBytes();
-        var subnetBytes = subnet.GetAddressBytes();
-
-        for ( var i = 0; i < 4; i++ )
-        {
-            addressBytes[ i ] = ( byte )( ( uint )addressBytes[ i ] | ( ( uint )subnetBytes[ i ] ^ ( uint )255 ) );
-        }
-
-        BroadcastAddress = new IPAddress( addressBytes );
-    }
-
-    public IPAddress BroadcastAddress { get; }
-};
-
 public class ArtNetSocket : Socket
 {
     private const int Port = 6454;
@@ -59,7 +33,7 @@ public class ArtNetSocket : Socket
     {
         try
         {
-            Console.WriteLine( $"Sending to {destination}" );
+            // Console.WriteLine( $"Sending to {destination}" );
             SendTo( buffer.Buffer, SocketFlags.None, destination is not null ? new IPEndPoint( destination, Port ) : BroadcastEndpoint );
         }
         catch ( Exception e )
@@ -81,7 +55,7 @@ public class ArtNetSocket : Socket
     {
         try
         {
-            Console.WriteLine( "Starting to listen" );
+            // Console.WriteLine( "Starting to listen" );
             EndPoint localPort = new IPEndPoint( IPAddress.Any, Port );
             BeginReceiveMessageFrom( RxBuffer, 0, RxBuffer.Length, SocketFlags.None, ref localPort, OnReceive, null );
         }
@@ -102,7 +76,7 @@ public class ArtNetSocket : Socket
 
                 var length = EndReceiveMessageFrom( ar, ref flags, ref remote, out _ );
 
-                Console.WriteLine($"Received {length} bytes from {remote}");
+                // Console.WriteLine($"Received {length} bytes from {remote}");
                 
                 if ( NetworkInterface.Address.Equals( ( ( IPEndPoint )remote ).Address ) ) return;
                 if ( length <= 12 || !RxBuffer.IsArtNetPacket() ) return;
